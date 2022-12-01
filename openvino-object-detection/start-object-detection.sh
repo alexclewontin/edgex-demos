@@ -29,11 +29,16 @@ echo "RTSP URL of EdgeX Device Camera: $RTSP_URL"
 
 echo "Starting object detection demo"
 source ./data_processing/dl_streamer/bin/setupvars.sh
+cd /srv
+python3 -m http.server 8880 &
 exec gst-launch-1.0 \
 	urisourcebin uri=$RTSP_URL ! decodebin ! \
 	gvadetect model=${DETECTION_MODEL} model_proc=${DETECTION_MODEL_PROC} device=CPU ! queue ! \
 	gvametaconvert format=json ! queue ! \
 	gvametapublish address=localhost:1883 method=mqtt topic=openvino/MQTT-test-device/prediction qos=true ! queue ! \
-	gvawatermark ! videoconvert ! fpsdisplaysink video-sink=autovideosink sync=false
+	gvawatermark ! videoconvert ! \
+	x264enc tune=zerolatency ! mpegtsmux ! \
+	hlssink playlist-root=http://hades.olympus.lewont.in:8880 \
+	location=/srv/segment_%05d.ts target-duration=5 max-files=5
 
 

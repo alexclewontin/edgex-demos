@@ -16,9 +16,12 @@ RUN if [ -f /opt/intel/openvino/deployment_tools/model_optimizer/install_prerequ
 RUN cd /opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader \
 	&& python3 downloader.py --name yolo-v2-tiny-ava-0001
 
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install -y jq x264 gstreamer1.0-tools gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly
 
 COPY start-object-detection.sh .
+
+RUN mkdir -p /srv
+COPY index.html /srv/index.html
 
 ENV DISPLAY=:0
 ENV DETECTION_MODEL=/opt/intel/openvino/deployment_tools/open_model_zoo/tools/downloader/intel/yolo-v2-tiny-ava-0001/FP32/yolo-v2-tiny-ava-0001.xml
